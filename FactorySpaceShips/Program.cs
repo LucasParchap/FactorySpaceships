@@ -1,4 +1,5 @@
 ﻿using System;
+using FactorySpaceships.Models;
 
 namespace FactorySpaceships
 {
@@ -6,7 +7,8 @@ namespace FactorySpaceships
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello, World!");
+            CommandPrompt.Launch();
         }
     }
 }
+ 
