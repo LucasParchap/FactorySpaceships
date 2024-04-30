@@ -7,11 +7,13 @@ public class Inventory
 {
     public List<Spaceship> Spaceships { get; private set; }
     public List<Part> Parts { get; private set; }
+    public List<Assembly> Assemblies { get; private set; }
     
     public Inventory()
     {
         Spaceships = new List<Spaceship>();
         Parts = new List<Part>();
+        Assemblies = new List<Assembly>(); 
     }
     /**
      * Group all the spaceships into a dictionary  (key = type  | value = counter)
@@ -64,6 +66,19 @@ public class Inventory
         {
             Console.WriteLine($"{typeCount.Value} {typeCount.Key}");
         }
-        
+    }
+    public void PrintAssemblies()
+    {
+        foreach(var assembly in Assemblies)
+        {
+            Console.WriteLine(assembly.ToString());
+        }
+    }
+
+    public void SummarizeInventory()
+    {
+        PrintNumberOfSpaceshipByType();
+        PrintNumberOfPartByName();
+        PrintAssemblies();
     }
 }
