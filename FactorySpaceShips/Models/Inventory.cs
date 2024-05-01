@@ -17,13 +17,10 @@ public class Inventory
     }
     /**
      * Group all the spaceships into a dictionary  (key = type  | value = counter)
-     * Display the number of spaceships categorized by type
-     * This function can be merged with PrintNumberOfPartByName()
      */
-    public void PrintNumberOfSpaceshipByType()
+    public Dictionary<string, int> GetSpaceshipTypeCounts()
     {
-        Dictionary<string, int> typeCounts = new Dictionary<string, int>();
-
+        var typeCounts = new Dictionary<string, int>();
         foreach (var spaceship in Spaceships)
         {
             if (typeCounts.ContainsKey(spaceship.Type))
@@ -35,7 +32,14 @@ public class Inventory
                 typeCounts.Add(spaceship.Type, 1);
             }
         }
-        
+        return typeCounts;
+    }
+    /*
+     * Display the number of spaceships categorized by type
+     */
+    public void DisplaySpaceshipTypeCounts()
+    {
+        var typeCounts = GetSpaceshipTypeCounts();
         foreach (var typeCount in typeCounts)
         {
             Console.WriteLine($"{typeCount.Value} {typeCount.Key}");
@@ -43,42 +47,45 @@ public class Inventory
     }
     /**
      * Group all the parts into a dictionary  (key = name  | value = counter)
-     * Display the number of parts categorized by name
-     * This function can be merged with PrintNumberOfSpaceshipByType()
      */
-    public void PrintNumberOfPartByName()
+    public Dictionary<string, int> GetPartCounts()
     {
-        Dictionary<string, int> typeCounts = new Dictionary<string, int>();
-
+        var partCounts = new Dictionary<string, int>();
         foreach (var part in Parts)
         {
-            if (typeCounts.ContainsKey(part.Name))
+            if (partCounts.ContainsKey(part.Name))
             {
-                typeCounts[part.Name]++;
+                partCounts[part.Name]++;
             }
             else
             {
-                typeCounts.Add(part.Name, 1);
+                partCounts.Add(part.Name, 1);
             }
         }
-        
-        foreach (var typeCount in typeCounts)
+        return partCounts;
+    }
+    /*
+     * Display the number of parts categorized by name
+     */
+    public void DisplayPartCounts()
+    {
+        var partCounts = GetPartCounts();
+        foreach (var count in partCounts)
         {
-            Console.WriteLine($"{typeCount.Value} {typeCount.Key}");
+            Console.WriteLine($"{count.Value} {count.Key}");
         }
     }
-    public void PrintAssemblies()
+    public void DisplayAssemblies()
     {
         foreach(var assembly in Assemblies)
         {
             Console.WriteLine(assembly.ToString());
         }
     }
-
     public void SummarizeInventory()
     {
-        PrintNumberOfSpaceshipByType();
-        PrintNumberOfPartByName();
-        PrintAssemblies();
+        DisplaySpaceshipTypeCounts();
+        DisplayPartCounts();
+        DisplayAssemblies();
     }
 }
