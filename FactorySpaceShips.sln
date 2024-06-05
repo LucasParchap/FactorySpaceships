@@ -1,9 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# 
+#
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FactorySpaceShips", "FactorySpaceShips\FactorySpaceShips.csproj", "{2C71CA80-F978-48A9-8563-4A0D6463F2A5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FactorySpaceships.Tests", "FactorySpaceships.Tests\FactorySpaceships.Tests.csproj", "{FCC514C6-9A4A-4410-B2D3-94995C68D1BB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E72308D3-5049-42F5-A1DA-0F689E064F80}"
+	ProjectSection(SolutionItems) = preProject
+		docker-compose.yml = docker-compose.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
