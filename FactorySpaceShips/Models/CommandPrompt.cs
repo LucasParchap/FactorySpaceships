@@ -38,9 +38,13 @@ public class CommandPrompt
                         case "EXIT":
                             running = false;
                             break;
+                        case "NEEDED_STOCKS":
+                            Inventory.DisplayNeededStocks(argumentsDict);
+                            break;
                         default:
                             Console.WriteLine("Unknown command. Please try again.");
                             break;
+                        
                     }
                 }
             }
@@ -97,5 +101,7 @@ public class CommandPrompt
         }
         return argumentsDictionary;
     }
+    
+    
  
 }

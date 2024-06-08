@@ -97,4 +97,71 @@ public class InventoryTest
         Assert.Equal(expectedDescription1 , actualCounts1);
         Assert.Equal(expectedDescription2 , actualDescription2);
     }
+    [Fact]
+    public void DisplayNeededStocks_ShouldOutputCorrectPartsForSpaceships()
+    {
+        var inventory = new Inventory();
+        Dictionary<string, int> neededStocks = new Dictionary<string, int>
+        {
+            { "Explorer", 2 },
+            { "Cargo", 1 }
+        };
+    
+        string expectedOutput = 
+            "2 Explorer:\n" +
+            "2 Hull_HE1\n" +
+            "2 Engine_EE1\n" +
+            "2 Wings_WE1\n" +
+            "2 Thruster_TE1\n\n" +
+            "1 Cargo:\n" +
+            "1 Hull_HC1\n" +
+            "1 Engine_EC1\n" +
+            "1 Wings_WC1\n" +
+            "1 Thruster_TC1\n\n" + 
+            "Total:\n" +
+            "2 Hull_HE1\n" +
+            "2 Engine_EE1\n" +
+            "2 Wings_WE1\n" +
+            "2 Thruster_TE1\n" +
+            "1 Hull_HC1\n" +
+            "1 Engine_EC1\n" +
+            "1 Wings_WC1\n" +
+            "1 Thruster_TC1";
+    
+        using (var sw = new StringWriter())
+        {
+            Console.SetOut(sw);
+        
+            inventory.DisplayNeededStocks(neededStocks);
+        
+            var result = sw.ToString().Replace("\r\n", "\n").Trim(); 
+            expectedOutput = expectedOutput.Replace("\r\n", "\n").Trim();
+            
+            Assert.Equal(expectedOutput, result);
+        }
+    }
+
+    [Fact]
+    public void DisplayNeededStocks_ShouldOutputNoConfigFoundMessage()
+    {
+        // Arrange
+        var inventory = new Inventory(); 
+        Dictionary<string, int> neededStocks = new Dictionary<string, int>
+        {
+            { "UnknownType", 3 }
+        };
+
+        string expectedMessage = "No configuration found for spaceship type 'UnknownType'.";
+        
+        using (var sw = new StringWriter())
+        {
+            Console.SetOut(sw);
+            
+            inventory.DisplayNeededStocks(neededStocks);
+            
+            var result = sw.ToString().Trim();
+            
+            Assert.Contains(expectedMessage, result);
+        }
+    }
 }
