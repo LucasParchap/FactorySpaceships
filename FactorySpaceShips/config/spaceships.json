@@ -1,0 +1,31 @@
+﻿{
+  "Spaceships": [
+    {
+      "Type": "Explorer",
+      "Parts": {
+        "Hull_HE1": 1,
+        "Engine_EE1": 1,
+        "Wings_WE1": 1,
+        "Thruster_TE1": 1
+      }
+    },
+    {
+      "Type": "Speeder",
+      "Parts": {
+        "Hull_HS1": 1,
+        "Engine_ES1": 1,
+        "Wings_WS1": 1,
+        "Thruster_TS1": 2
+      }
+    },
+    {
+      "Type": "Cargo",
+      "Parts": {
+        "Hull_HC1": 1,
+        "Engine_EC1": 1,
+        "Wings_WC1": 1,
+        "Thruster_TC1": 1
+      }
+    }
+  ]
+}
