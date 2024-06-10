@@ -134,4 +134,63 @@ public class Inventory
             Console.WriteLine($"{part.Value} {part.Key}");
         }
     }
+     public void DisplayAssemblyInstructions(Dictionary<string, int> assemblyInstructions)
+    {
+        foreach (var instruction in assemblyInstructions)
+        {
+            string spaceshipType = instruction.Key;
+            int quantity = instruction.Value;
+            var spaceship = _configSpaceships.Find(s => s.Type.Equals(spaceshipType, StringComparison.OrdinalIgnoreCase));
+
+            if (spaceship != null)
+            {
+                for (int i = 0; i < quantity; i++)
+                {
+                    Console.WriteLine($"PRODUCING {spaceshipType}");
+                    
+                    foreach (var part in spaceship.Parts)
+                    {
+                        Console.WriteLine($"GET_OUT_STOCK {part.Value} {part.Key}");
+                    }
+                    
+                    List<string> tempAssemblies = new List<string>();
+                    
+                    if (spaceship.Parts.Count > 0)
+                    {
+                        string lastAssembly = "TMP1";
+                        tempAssemblies.Add(lastAssembly);
+                        Console.WriteLine($"ASSEMBLE {lastAssembly} {spaceship.Parts.Keys.ElementAt(0)} {spaceship.Parts.Keys.ElementAt(1)}");
+
+                        for (int j = 2; j < spaceship.Parts.Keys.Count; j++)
+                        {
+                            lastAssembly = $"TMP{j}";
+                            tempAssemblies.Add(lastAssembly);
+                            Console.WriteLine($"ASSEMBLE {lastAssembly} {tempAssemblies[tempAssemblies.Count - 2]} {spaceship.Parts.Keys.ElementAt(j)}");
+                        }
+                        
+                        if (spaceship.Parts[spaceship.Parts.Keys.Last()] > 1)
+                        {
+                            for (int k = 1; k < spaceship.Parts[spaceship.Parts.Keys.Last()]; k++)
+                            {
+                                string newAssembly = $"TMP{tempAssemblies.Count + 1}";
+                                Console.WriteLine($"ASSEMBLE {newAssembly} {lastAssembly} {spaceship.Parts.Keys.Last()}");
+                                lastAssembly = newAssembly;
+                                tempAssemblies.Add(newAssembly);
+                            }
+                        }
+                        Console.WriteLine($"FINISHED {spaceshipType}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Error: Not enough parts specified for {spaceshipType} to demonstrate complex assembly.");
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine($"No configuration found for spaceship type '{spaceshipType}'.");
+            }
+        }
+    }
+
 }

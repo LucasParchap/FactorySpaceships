@@ -164,4 +164,114 @@ public class InventoryTest
             Assert.Contains(expectedMessage, result);
         }
     }
+    [Fact]
+    public void DisplayAssemblyInstructions_ShouldOutputCorrectSequenceForSpeeder()
+    {
+        _inventory = new Inventory(); 
+        Dictionary<string, int> assemblyInstructions = new Dictionary<string, int> { { "Speeder", 1 } };
+        var expectedOutput = 
+            "PRODUCING Speeder\n" +
+            "GET_OUT_STOCK 1 Hull_HS1\n" +
+            "GET_OUT_STOCK 1 Engine_ES1\n" +
+            "GET_OUT_STOCK 1 Wings_WS1\n" +
+            "GET_OUT_STOCK 2 Thruster_TS1\n" +
+            "ASSEMBLE TMP1 Hull_HS1 Engine_ES1\n" +
+            "ASSEMBLE TMP2 TMP1 Wings_WS1\n" +
+            "ASSEMBLE TMP3 TMP2 Thruster_TS1\n" +
+            "ASSEMBLE TMP4 TMP3 Thruster_TS1\n" +
+            "FINISHED Speeder\n";
+
+        using (var sw = new StringWriter())
+        {
+            Console.SetOut(sw);
+            
+            _inventory.DisplayAssemblyInstructions(assemblyInstructions);
+            
+            var result = sw.ToString().Replace("\r\n", "\n").Trim();
+            expectedOutput = expectedOutput.Replace("\r\n", "\n").Trim();
+            
+            Assert.Equal(expectedOutput, result);
+        }
+    }
+    [Fact]
+    public void DisplayAssemblyInstructions_ShouldOutputCorrectSequenceForCargo()
+    {
+        _inventory = new Inventory(); 
+        Dictionary<string, int> assemblyInstructions = new Dictionary<string, int> { { "Cargo", 1 } };
+        var expectedOutput = 
+            "PRODUCING Cargo\n" +
+            "GET_OUT_STOCK 1 Hull_HC1\n" +
+            "GET_OUT_STOCK 1 Engine_EC1\n" +
+            "GET_OUT_STOCK 1 Wings_WC1\n" +
+            "GET_OUT_STOCK 1 Thruster_TC1\n" +
+            "ASSEMBLE TMP1 Hull_HC1 Engine_EC1\n" +
+            "ASSEMBLE TMP2 TMP1 Wings_WC1\n" +
+            "ASSEMBLE TMP3 TMP2 Thruster_TC1\n" +
+            "FINISHED Cargo\n";
+
+        using (var sw = new StringWriter())
+        {
+            Console.SetOut(sw);
+            
+            _inventory.DisplayAssemblyInstructions(assemblyInstructions);
+            
+            var result = sw.ToString().Replace("\r\n", "\n").Trim();
+            expectedOutput = expectedOutput.Replace("\r\n", "\n").Trim();
+            
+            Assert.Equal(expectedOutput, result);
+        }
+    }
+    [Fact]
+    public void DisplayAssemblyInstructions_ShouldOutputCorrectSequencesForCargoAndSpeeder()
+    {
+        _inventory = new Inventory(); 
+        Dictionary<string, int> assemblyInstructions = new Dictionary<string, int>
+        {
+            { "Cargo", 2 },
+            { "Speeder", 1 }
+        };
+
+        string expectedOutput =
+            "PRODUCING Cargo\n" +
+            "GET_OUT_STOCK 1 Hull_HC1\n" +
+            "GET_OUT_STOCK 1 Engine_EC1\n" +
+            "GET_OUT_STOCK 1 Wings_WC1\n" +
+            "GET_OUT_STOCK 1 Thruster_TC1\n" +
+            "ASSEMBLE TMP1 Hull_HC1 Engine_EC1\n" +
+            "ASSEMBLE TMP2 TMP1 Wings_WC1\n" +
+            "ASSEMBLE TMP3 TMP2 Thruster_TC1\n" +
+            "FINISHED Cargo\n" +
+            "PRODUCING Cargo\n" +
+            "GET_OUT_STOCK 1 Hull_HC1\n" +
+            "GET_OUT_STOCK 1 Engine_EC1\n" +
+            "GET_OUT_STOCK 1 Wings_WC1\n" +
+            "GET_OUT_STOCK 1 Thruster_TC1\n" +
+            "ASSEMBLE TMP1 Hull_HC1 Engine_EC1\n" +
+            "ASSEMBLE TMP2 TMP1 Wings_WC1\n" +
+            "ASSEMBLE TMP3 TMP2 Thruster_TC1\n" +
+            "FINISHED Cargo\n" +
+            "PRODUCING Speeder\n" +
+            "GET_OUT_STOCK 1 Hull_HS1\n" +
+            "GET_OUT_STOCK 1 Engine_ES1\n" +
+            "GET_OUT_STOCK 1 Wings_WS1\n" +
+            "GET_OUT_STOCK 2 Thruster_TS1\n" +
+            "ASSEMBLE TMP1 Hull_HS1 Engine_ES1\n" +
+            "ASSEMBLE TMP2 TMP1 Wings_WS1\n" +
+            "ASSEMBLE TMP3 TMP2 Thruster_TS1\n" +
+            "ASSEMBLE TMP4 TMP3 Thruster_TS1\n" +
+            "FINISHED Speeder\n";
+
+        using (var sw = new StringWriter())
+        {
+            Console.SetOut(sw);
+            
+            _inventory.DisplayAssemblyInstructions(assemblyInstructions);
+            
+            var result = sw.ToString().Replace("\r\n", "\n").Trim();
+            expectedOutput = expectedOutput.Replace("\r\n", "\n").Trim();
+            
+            Assert.Equal(expectedOutput, result);
+        }
+    }
+    
 }
