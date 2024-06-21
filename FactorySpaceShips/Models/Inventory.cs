@@ -247,4 +247,99 @@ public class Inventory
         }
     }
 
+    public void ProduceCommand(Dictionary<string, int> command)
+    {
+        if (!VerifyCommandForProduction(command))
+        {
+            Console.WriteLine("ERROR: Insufficient materials to produce the requested spaceships.");
+
+            return;
+        }
+
+        foreach (var item in command)
+        {
+            string spaceshipType = item.Key;
+            int quantityNeeded = item.Value;
+            var config = _configSpaceships.Find(s => s.Type.Equals(spaceshipType, StringComparison.OrdinalIgnoreCase));
+            
+            for (int i = 0; i < quantityNeeded; i++)
+            {
+                var spaceship = CreateSpaceshipFromConfig(config);
+                Spaceships.Add(spaceship);
+            }
+
+            foreach (var part in config.Parts)
+            {
+                int requiredQuantity = part.Value * quantityNeeded;
+                ReduceStock(part.Key, requiredQuantity);
+            }
+        }
+
+        Console.WriteLine("STOCK_UPDATED");
+    }
+
+    private bool VerifyCommandForProduction(Dictionary<string, int> command)
+    {
+        Dictionary<string, int> partInventory = GetPartsInventoryDictionary();
+        
+        foreach (var item in command)
+        {
+            string spaceshipType = item.Key;
+            var spaceship = _configSpaceships.Find(s => s.Type.Equals(spaceshipType, StringComparison.OrdinalIgnoreCase));
+            if (spaceship == null) return false;
+
+            
+            foreach (var part in spaceship.Parts)
+            {
+                int requiredQuantity = part.Value * item.Value;
+                if (!partInventory.TryGetValue(part.Key, out int availableQuantity) || availableQuantity < requiredQuantity)
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    public void ReduceStock(string partName, int quantity)
+    {
+        for (int i = Parts.Count - 1; i >= 0; i--)
+        {
+            if (Parts[i].Name.Equals(partName, StringComparison.OrdinalIgnoreCase))
+            {
+                Parts.RemoveAt(i);
+                quantity--;     
+                if (quantity <= 0) break;  
+            }
+        }
+    }
+    public Spaceship CreateSpaceshipFromConfig(SpaceshipConfig.SpaceshipData config)
+    {
+        Hull hull = null;
+        Engine engine = null;
+        Wings wings = null;
+        List<Thruster> thrusters = new List<Thruster>();
+
+        foreach (var part in config.Parts)
+        {
+            switch (part.Key)
+            {
+                case "Hull":
+                    hull = new Hull(part.Key);
+                    break;
+                case "Engine":
+                    engine = new Engine(part.Key);
+                    break;
+                case "Wings":
+                    wings = new Wings(part.Key);
+                    break;
+                case "Thruster":
+                    for (int i = 0; i < part.Value; i++)
+                    {
+                        thrusters.Add(new Thruster(part.Key));
+                    }
+                    break;
+            }
+        }
+        return new Spaceship(config.Type, hull, engine, wings, thrusters);
+    }
 }
