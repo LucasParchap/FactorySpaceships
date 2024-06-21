@@ -164,4 +164,223 @@ public class InventoryTest
             Assert.Contains(expectedMessage, result);
         }
     }
+    [Fact]
+    public void DisplayAssemblyInstructions_ShouldOutputCorrectSequenceForSpeeder()
+    {
+        _inventory = new Inventory(); 
+        Dictionary<string, int> assemblyInstructions = new Dictionary<string, int> { { "Speeder", 1 } };
+        var expectedOutput = 
+            "PRODUCING Speeder\n" +
+            "GET_OUT_STOCK 1 Hull_HS1\n" +
+            "GET_OUT_STOCK 1 Engine_ES1\n" +
+            "GET_OUT_STOCK 1 Wings_WS1\n" +
+            "GET_OUT_STOCK 2 Thruster_TS1\n" +
+            "ASSEMBLE TMP1 Hull_HS1 Engine_ES1\n" +
+            "ASSEMBLE TMP2 TMP1 Wings_WS1\n" +
+            "ASSEMBLE TMP3 TMP2 Thruster_TS1\n" +
+            "ASSEMBLE TMP4 TMP3 Thruster_TS1\n" +
+            "FINISHED Speeder\n";
+
+        using (var sw = new StringWriter())
+        {
+            Console.SetOut(sw);
+            
+            _inventory.DisplayAssemblyInstructions(assemblyInstructions);
+            
+            var result = sw.ToString().Replace("\r\n", "\n").Trim();
+            expectedOutput = expectedOutput.Replace("\r\n", "\n").Trim();
+            
+            Assert.Equal(expectedOutput, result);
+        }
+    }
+    [Fact]
+    public void DisplayAssemblyInstructions_ShouldOutputCorrectSequenceForCargo()
+    {
+        _inventory = new Inventory(); 
+        Dictionary<string, int> assemblyInstructions = new Dictionary<string, int> { { "Cargo", 1 } };
+        var expectedOutput = 
+            "PRODUCING Cargo\n" +
+            "GET_OUT_STOCK 1 Hull_HC1\n" +
+            "GET_OUT_STOCK 1 Engine_EC1\n" +
+            "GET_OUT_STOCK 1 Wings_WC1\n" +
+            "GET_OUT_STOCK 1 Thruster_TC1\n" +
+            "ASSEMBLE TMP1 Hull_HC1 Engine_EC1\n" +
+            "ASSEMBLE TMP2 TMP1 Wings_WC1\n" +
+            "ASSEMBLE TMP3 TMP2 Thruster_TC1\n" +
+            "FINISHED Cargo\n";
+
+        using (var sw = new StringWriter())
+        {
+            Console.SetOut(sw);
+            
+            _inventory.DisplayAssemblyInstructions(assemblyInstructions);
+            
+            var result = sw.ToString().Replace("\r\n", "\n").Trim();
+            expectedOutput = expectedOutput.Replace("\r\n", "\n").Trim();
+            
+            Assert.Equal(expectedOutput, result);
+        }
+    }
+    [Fact]
+    public void DisplayAssemblyInstructions_ShouldOutputCorrectSequencesForCargoAndSpeeder()
+    {
+        _inventory = new Inventory(); 
+        Dictionary<string, int> assemblyInstructions = new Dictionary<string, int>
+        {
+            { "Cargo", 2 },
+            { "Speeder", 1 }
+        };
+
+        string expectedOutput =
+            "PRODUCING Cargo\n" +
+            "GET_OUT_STOCK 1 Hull_HC1\n" +
+            "GET_OUT_STOCK 1 Engine_EC1\n" +
+            "GET_OUT_STOCK 1 Wings_WC1\n" +
+            "GET_OUT_STOCK 1 Thruster_TC1\n" +
+            "ASSEMBLE TMP1 Hull_HC1 Engine_EC1\n" +
+            "ASSEMBLE TMP2 TMP1 Wings_WC1\n" +
+            "ASSEMBLE TMP3 TMP2 Thruster_TC1\n" +
+            "FINISHED Cargo\n" +
+            "PRODUCING Cargo\n" +
+            "GET_OUT_STOCK 1 Hull_HC1\n" +
+            "GET_OUT_STOCK 1 Engine_EC1\n" +
+            "GET_OUT_STOCK 1 Wings_WC1\n" +
+            "GET_OUT_STOCK 1 Thruster_TC1\n" +
+            "ASSEMBLE TMP1 Hull_HC1 Engine_EC1\n" +
+            "ASSEMBLE TMP2 TMP1 Wings_WC1\n" +
+            "ASSEMBLE TMP3 TMP2 Thruster_TC1\n" +
+            "FINISHED Cargo\n" +
+            "PRODUCING Speeder\n" +
+            "GET_OUT_STOCK 1 Hull_HS1\n" +
+            "GET_OUT_STOCK 1 Engine_ES1\n" +
+            "GET_OUT_STOCK 1 Wings_WS1\n" +
+            "GET_OUT_STOCK 2 Thruster_TS1\n" +
+            "ASSEMBLE TMP1 Hull_HS1 Engine_ES1\n" +
+            "ASSEMBLE TMP2 TMP1 Wings_WS1\n" +
+            "ASSEMBLE TMP3 TMP2 Thruster_TS1\n" +
+            "ASSEMBLE TMP4 TMP3 Thruster_TS1\n" +
+            "FINISHED Speeder\n";
+
+        using (var sw = new StringWriter())
+        {
+            Console.SetOut(sw);
+            
+            _inventory.DisplayAssemblyInstructions(assemblyInstructions);
+            
+            var result = sw.ToString().Replace("\r\n", "\n").Trim();
+            expectedOutput = expectedOutput.Replace("\r\n", "\n").Trim();
+            
+            Assert.Equal(expectedOutput, result);
+        }
+    }
+    
+    [Fact]
+    public void VerifyCommand_ShouldDisplayErrorForUnrecognizedSpaceship()
+    {
+        _inventory = new Inventory(); 
+        Dictionary<string, int> command = new Dictionary<string, int>
+        {
+            { "UnknownShip", 1 }
+        };
+
+        using (var sw = new StringWriter())
+        {
+            Console.SetOut(sw);
+            _inventory.VerifyCommand(command);
+            var result = sw.ToString().Trim();
+            Assert.Equal("ERROR `UnknownShip` is not a recognized spaceship", result);
+        }
+    }
+    [Fact]
+    public void VerifyCommand_ShouldDisplayUnavailableWhenStockIsInsufficient()
+    {
+        _inventory = new Inventory(); 
+        _inventory.Parts.Add(new Hull("Hull_HS1"));
+        _inventory.Parts.Add(new Engine("Engine_ES1"));
+        _inventory.Parts.Add(new Wings("Wings_WS1"));
+        _inventory.Parts.Add(new Thruster("Thruster_TS1"));
+        
+        Dictionary<string, int> command = new Dictionary<string, int>
+        {
+            { "Speeder", 1 }
+        };
+
+        using (var sw = new StringWriter())
+        {
+            Console.SetOut(sw);
+            _inventory.VerifyCommand(command);
+            var result = sw.ToString().Trim();
+            Assert.Equal("UNAVAILABLE", result);
+        }
+    }
+    [Fact]
+    public void VerifyCommand_ShouldDisplayAvailableWhenStockIsSufficient()
+    {
+        _inventory = new Inventory(); 
+        _inventory.Parts.Add(new Hull("Hull_HS1"));
+        _inventory.Parts.Add(new Engine("Engine_ES1"));
+        _inventory.Parts.Add(new Wings("Wings_WS1"));
+        _inventory.Parts.Add(new Thruster("Thruster_TS1"));
+        _inventory.Parts.Add(new Thruster("Thruster_TS1"));
+        
+        Dictionary<string, int> command = new Dictionary<string, int>
+        {
+            { "Speeder", 1 }
+        };
+
+        using (var sw = new StringWriter())
+        {
+            Console.SetOut(sw);
+            _inventory.VerifyCommand(command);
+            var result = sw.ToString().Trim();
+            Assert.Equal("AVAILABLE", result);
+        }
+    }
+    
+    [Fact]
+    public void ProduceCommand_ShouldFail_WhenMaterialsAreInsufficient()
+    {
+        _inventory = new Inventory(); 
+        _inventory.Parts.Add(new Hull("Hull_HS1"));
+        _inventory.Parts.Add(new Engine("Engine_ES1"));
+        _inventory.Parts.Add(new Wings("Wings_WS1"));
+        _inventory.Parts.Add(new Thruster("Thruster_TS1"));
+        _inventory.Parts.Add(new Thruster("Thruster_TS1"));
+        
+        var command = new Dictionary<string, int> { { "Speeder", 2 } }; 
+
+        using (var sw = new StringWriter())
+        {
+            Console.SetOut(sw);
+            
+            _inventory.ProduceCommand(command);
+            
+            var output = sw.ToString().Trim();
+            Assert.Equal("ERROR: Insufficient materials to produce the requested spaceships.", output);
+        }
+    }
+    [Fact]
+    public void ProduceCommand_ShouldAddSpaceshipsToInventoryAndShowStockUpdated()
+    {
+        _inventory = new Inventory(); 
+        _inventory.Parts.Add(new Hull("Hull_HS1"));
+        _inventory.Parts.Add(new Engine("Engine_ES1"));
+        _inventory.Parts.Add(new Wings("Wings_WS1"));
+        _inventory.Parts.Add(new Thruster("Thruster_TS1"));
+        _inventory.Parts.Add(new Thruster("Thruster_TS1"));
+        
+        var command = new Dictionary<string, int> { { "Speeder", 1 } };
+
+        using (var sw = new StringWriter())
+        {
+            Console.SetOut(sw);
+            
+            _inventory.ProduceCommand(command);
+            
+            var output = sw.ToString().Trim();
+            Assert.Equal("STOCK_UPDATED", output);
+            Assert.Equal(1, _inventory.Spaceships.Count);
+            Assert.Equal("Speeder", _inventory.Spaceships[0].Type);
+        }
+    }
 }

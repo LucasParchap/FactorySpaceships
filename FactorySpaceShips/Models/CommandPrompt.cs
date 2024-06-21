@@ -35,11 +35,20 @@ public class CommandPrompt
                         case "STOCKS":
                             Inventory.SummarizeInventory();
                             break;
-                        case "EXIT":
-                            running = false;
-                            break;
                         case "NEEDED_STOCKS":
                             Inventory.DisplayNeededStocks(argumentsDict);
+                            break;
+                        case "INSTRUCTIONS":
+                            Inventory.DisplayAssemblyInstructions(argumentsDict);
+                            break;
+                        case "VERIFY":
+                            Inventory.VerifyCommand(argumentsDict);
+                            break;
+                        case "PRODUCE":
+                            Inventory.ProduceCommand(argumentsDict);
+                            break;
+                        case "EXIT":
+                            running = false;
                             break;
                         default:
                             Console.WriteLine("Unknown command. Please try again.");
