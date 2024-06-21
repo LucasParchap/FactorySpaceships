@@ -44,6 +44,9 @@ public class CommandPrompt
                         case "VERIFY":
                             Inventory.VerifyCommand(argumentsDict);
                             break;
+                        case "PRODUCE":
+                            Inventory.ProduceCommand(argumentsDict);
+                            break;
                         case "EXIT":
                             running = false;
                             break;
