@@ -336,4 +336,51 @@ public class InventoryTest
             Assert.Equal("AVAILABLE", result);
         }
     }
+    
+    [Fact]
+    public void ProduceCommand_ShouldFail_WhenMaterialsAreInsufficient()
+    {
+        _inventory = new Inventory(); 
+        _inventory.Parts.Add(new Hull("Hull_HS1"));
+        _inventory.Parts.Add(new Engine("Engine_ES1"));
+        _inventory.Parts.Add(new Wings("Wings_WS1"));
+        _inventory.Parts.Add(new Thruster("Thruster_TS1"));
+        _inventory.Parts.Add(new Thruster("Thruster_TS1"));
+        
+        var command = new Dictionary<string, int> { { "Speeder", 2 } }; 
+
+        using (var sw = new StringWriter())
+        {
+            Console.SetOut(sw);
+            
+            _inventory.ProduceCommand(command);
+            
+            var output = sw.ToString().Trim();
+            Assert.Equal("ERROR: Insufficient materials to produce the requested spaceships.", output);
+        }
+    }
+    [Fact]
+    public void ProduceCommand_ShouldAddSpaceshipsToInventoryAndShowStockUpdated()
+    {
+        _inventory = new Inventory(); 
+        _inventory.Parts.Add(new Hull("Hull_HS1"));
+        _inventory.Parts.Add(new Engine("Engine_ES1"));
+        _inventory.Parts.Add(new Wings("Wings_WS1"));
+        _inventory.Parts.Add(new Thruster("Thruster_TS1"));
+        _inventory.Parts.Add(new Thruster("Thruster_TS1"));
+        
+        var command = new Dictionary<string, int> { { "Speeder", 1 } };
+
+        using (var sw = new StringWriter())
+        {
+            Console.SetOut(sw);
+            
+            _inventory.ProduceCommand(command);
+            
+            var output = sw.ToString().Trim();
+            Assert.Equal("STOCK_UPDATED", output);
+            Assert.Equal(1, _inventory.Spaceships.Count);
+            Assert.Equal("Speeder", _inventory.Spaceships[0].Type);
+        }
+    }
 }
