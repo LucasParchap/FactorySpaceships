@@ -192,5 +192,59 @@ public class Inventory
             }
         }
     }
+     
+    public Dictionary<string, int> GetPartsInventoryDictionary()
+    {
+        Dictionary<string, int> partInventory = new Dictionary<string, int>();
+        foreach (var part in Parts)
+        {
+            if (partInventory.ContainsKey(part.Name))
+            {
+                partInventory[part.Name]++;
+            }
+            else
+            {
+                partInventory.Add(part.Name, 1);
+            }
+        }
+        return partInventory;
+    }
+    public void VerifyCommand(Dictionary<string, int> argumentsDict)
+    {
+        Dictionary<string, int> partInventory = GetPartsInventoryDictionary();
+        bool isUnavailable = false;
+        
+        foreach (var item in argumentsDict)
+        {
+            string spaceshipType = item.Key;
+            int quantityNeeded = item.Value;
+            var spaceship = _configSpaceships.Find(s => s.Type.Equals(spaceshipType, StringComparison.OrdinalIgnoreCase));
+
+            if (spaceship == null)
+            {
+                Console.WriteLine($"ERROR `{spaceshipType}` is not a recognized spaceship");
+                return;
+            }
+    
+            foreach (var part in spaceship.Parts)
+            {
+                int requiredQuantity = part.Value * quantityNeeded;
+                int availableQuantity = partInventory.ContainsKey(part.Key) ? partInventory[part.Key] : 0;
+
+                if (availableQuantity < requiredQuantity)
+                {
+                    isUnavailable = true;
+                }
+            }
+        }
+        if (isUnavailable)
+        {
+            Console.WriteLine("UNAVAILABLE");
+        }
+        else
+        {
+            Console.WriteLine("AVAILABLE");
+        }
+    }
 
 }

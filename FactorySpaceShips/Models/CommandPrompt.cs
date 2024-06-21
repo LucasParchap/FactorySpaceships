@@ -41,6 +41,9 @@ public class CommandPrompt
                         case "INSTRUCTIONS":
                             Inventory.DisplayAssemblyInstructions(argumentsDict);
                             break;
+                        case "VERIFY":
+                            Inventory.VerifyCommand(argumentsDict);
+                            break;
                         case "EXIT":
                             running = false;
                             break;

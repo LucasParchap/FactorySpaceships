@@ -274,4 +274,66 @@ public class InventoryTest
         }
     }
     
+    [Fact]
+    public void VerifyCommand_ShouldDisplayErrorForUnrecognizedSpaceship()
+    {
+        _inventory = new Inventory(); 
+        Dictionary<string, int> command = new Dictionary<string, int>
+        {
+            { "UnknownShip", 1 }
+        };
+
+        using (var sw = new StringWriter())
+        {
+            Console.SetOut(sw);
+            _inventory.VerifyCommand(command);
+            var result = sw.ToString().Trim();
+            Assert.Equal("ERROR `UnknownShip` is not a recognized spaceship", result);
+        }
+    }
+    [Fact]
+    public void VerifyCommand_ShouldDisplayUnavailableWhenStockIsInsufficient()
+    {
+        _inventory = new Inventory(); 
+        _inventory.Parts.Add(new Hull("Hull_HS1"));
+        _inventory.Parts.Add(new Engine("Engine_ES1"));
+        _inventory.Parts.Add(new Wings("Wings_WS1"));
+        _inventory.Parts.Add(new Thruster("Thruster_TS1"));
+        
+        Dictionary<string, int> command = new Dictionary<string, int>
+        {
+            { "Speeder", 1 }
+        };
+
+        using (var sw = new StringWriter())
+        {
+            Console.SetOut(sw);
+            _inventory.VerifyCommand(command);
+            var result = sw.ToString().Trim();
+            Assert.Equal("UNAVAILABLE", result);
+        }
+    }
+    [Fact]
+    public void VerifyCommand_ShouldDisplayAvailableWhenStockIsSufficient()
+    {
+        _inventory = new Inventory(); 
+        _inventory.Parts.Add(new Hull("Hull_HS1"));
+        _inventory.Parts.Add(new Engine("Engine_ES1"));
+        _inventory.Parts.Add(new Wings("Wings_WS1"));
+        _inventory.Parts.Add(new Thruster("Thruster_TS1"));
+        _inventory.Parts.Add(new Thruster("Thruster_TS1"));
+        
+        Dictionary<string, int> command = new Dictionary<string, int>
+        {
+            { "Speeder", 1 }
+        };
+
+        using (var sw = new StringWriter())
+        {
+            Console.SetOut(sw);
+            _inventory.VerifyCommand(command);
+            var result = sw.ToString().Trim();
+            Assert.Equal("AVAILABLE", result);
+        }
+    }
 }
