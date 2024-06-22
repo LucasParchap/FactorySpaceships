@@ -8,11 +8,30 @@ namespace FactorySpaceships.Config
 {
     public class SpaceshipConfig
     {
+        private static SpaceshipConfig _instance;
+        private static readonly object _lock = new object();
         private readonly string _filePath;
         
-        public SpaceshipConfig()
+        private SpaceshipConfig()
         {
             _filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\..\FactorySpaceships\Config\spaceships.json");
+        }
+        public static SpaceshipConfig Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    lock (_lock)
+                    {
+                        if (_instance == null)
+                        {
+                            _instance = new SpaceshipConfig();
+                        }
+                    }
+                }
+                return _instance;
+            }
         }
 		public class SpaceshipsWrapper
         {

@@ -1,4 +1,5 @@
-﻿using FactorySpaceships.Models;
+﻿using FactorySpaceships.Config;
+using FactorySpaceships.Models;
 
 namespace FactorySpaceships.Tests;
 
@@ -43,6 +44,13 @@ public class SingletonTests
         thread1.Join();
         thread2.Join();
 
+        Assert.Same(instance1, instance2);
+    }
+    [Fact]
+    public void SpaceshipConfigSingleton_ShouldReturnSameInstance()
+    {
+        var instance1 = SpaceshipConfig.Instance;
+        var instance2 = SpaceshipConfig.Instance;
         Assert.Same(instance1, instance2);
     }
 }

@@ -17,8 +17,8 @@ public sealed class Inventory
     {
         Spaceships = new List<Spaceship>();
         Parts = new List<Part>();
-        Assemblies = new List<Assembly>(); 
-        SpaceshipConfig spaceshipConfig = new SpaceshipConfig();
+        Assemblies = new List<Assembly>();
+        SpaceshipConfig spaceshipConfig = SpaceshipConfig.Instance;
         _configSpaceships = spaceshipConfig.LoadSpaceships();
     }
     public static Inventory Instance
