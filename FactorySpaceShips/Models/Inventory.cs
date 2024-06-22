@@ -4,20 +4,39 @@ using FactorySpaceships.Config;
 
 namespace FactorySpaceships.Models;
 
-public class Inventory
+public sealed class Inventory
 {
+    private static Inventory _instance;
+    private static readonly object _lock = new object();
     public List<Spaceship> Spaceships { get; private set; }
     public List<Part> Parts { get; private set; }
     public List<Assembly> Assemblies { get; private set; }
     
     private List<SpaceshipConfig.SpaceshipData> _configSpaceships;
-    public Inventory()
+    private Inventory()
     {
         Spaceships = new List<Spaceship>();
         Parts = new List<Part>();
         Assemblies = new List<Assembly>(); 
         SpaceshipConfig spaceshipConfig = new SpaceshipConfig();
         _configSpaceships = spaceshipConfig.LoadSpaceships();
+    }
+    public static Inventory Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                lock (_lock)
+                {
+                    if (_instance == null)
+                    {
+                        _instance = new Inventory();
+                    }
+                }
+            }
+            return _instance;
+        }
     }
     /**
      * Group all the spaceships into a dictionary  (key = type  | value = counter)

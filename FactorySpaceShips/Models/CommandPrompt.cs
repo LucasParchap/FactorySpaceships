@@ -4,7 +4,7 @@ namespace FactorySpaceships.Models;
 
 public class CommandPrompt
 {
-    public static Inventory Inventory = new Inventory();
+    public static Inventory Inventory = Inventory.Instance;
     public static CommandLineErrorHandler CommandLineErrorHandler = new CommandLineErrorHandler();
     /*
      * Method to process commands
