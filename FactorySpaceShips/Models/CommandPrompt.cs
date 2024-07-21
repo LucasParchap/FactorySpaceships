@@ -1,5 +1,7 @@
 using FactorySpaceships.Error;
+using FactorySpaceships.Models.Commands;
 using FactorySpaceships.Models.Factories;
+using FactorySpaceships.Models.Observer;
 
 namespace FactorySpaceships.Models;
 
@@ -12,6 +14,8 @@ public class CommandPrompt
     {
         Inventory.ConfigureFactories(new HullFactory(), new EngineFactory(), new WingsFactory(), new ThrusterFactory());
         Inventory = Inventory.Instance;
+        StockLogger logger = new StockLogger();
+        Inventory.Attach(logger);
     }
     /*
      * Method to process commands
@@ -22,49 +26,30 @@ public class CommandPrompt
         while (running)
         {
             Console.WriteLine("Please enter a command : ");
-            String? input = Convert.ToString(Console.ReadLine());
-            
+            string input = Console.ReadLine();
             string command = ExtractValidCommandFromInput(input);
-            string[] arguments;
+            string[] arguments = ExtractValidArgumentsFromInput(input);
+
             if (CommandLineErrorHandler.ValidateArgumentsStructure(input))
             {
-                arguments = ExtractValidArgumentsFromInput(input);
-                
-                if (!CommandLineErrorHandler.ValidateArguments(arguments))
+                ICommand cmd = null;
+
+                if (command.ToUpper() == "GET_MOVEMENTS")
                 {
-                    CommandLineErrorHandler.PrintError();
+                    cmd = new GetMovementsCommand(Inventory, arguments);
                 }
-                else
+                else if (command.ToUpper() != "EXIT")
                 {
                     Dictionary<string, int> argumentsDict = ConvertValidArgumentsToDictionary(arguments);
-                    switch (command.ToUpper())
-                    {
-                        case "STOCKS":
-                            Inventory.SummarizeInventory();
-                            break;
-                        case "NEEDED_STOCKS":
-                            Inventory.DisplayNeededStocks(argumentsDict);
-                            break;
-                        case "INSTRUCTIONS":
-                            Inventory.DisplayAssemblyInstructions(argumentsDict);
-                            break;
-                        case "VERIFY":
-                            Inventory.VerifyCommand(argumentsDict);
-                            break;
-                        case "PRODUCE":
-                            Inventory.ProduceCommand(argumentsDict);
-                            break;
-                        case "RECEIVE":
-                            Inventory.ReceiveCommand(argumentsDict);
-                            break;
-                        case "EXIT":
-                            running = false;
-                            break;
-                        default:
-                            Console.WriteLine("Unknown command. Please try again.");
-                            break;
-                    }
+                    cmd = CommandFactory.CreateCommand(command, Inventory, argumentsDict);
                 }
+                else if (command.ToUpper() == "EXIT")
+                {
+                    running = false;
+                    continue;
+                }
+
+                cmd?.Execute();
             }
             else
             {
@@ -72,6 +57,7 @@ public class CommandPrompt
             }
         }
     }
+
     public static string ExtractValidCommandFromInput(string input)
     {
         string[] parts = input.Split(' ');
