@@ -16,6 +16,10 @@ public class CommandLineErrorHandler : ErrorHandler
     public bool ValidateArgumentsStructure(string input)
     {
         string[] argumentsParts = input.Split(new char[] { ' ' }, 2);
+        if (argumentsParts[0] == "GET_MOVEMENTS")
+        {
+            return true;
+        }
         if (argumentsParts.Length < 2 || string.IsNullOrWhiteSpace(argumentsParts[1]))
         {
             message = "";

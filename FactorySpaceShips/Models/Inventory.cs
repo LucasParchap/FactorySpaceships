@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using FactorySpaceships.Config;
 using FactorySpaceships.Models.Factories;
+using FactorySpaceships.Models.Observer;
 
 namespace FactorySpaceships.Models;
 
-public sealed class Inventory
+public sealed class Inventory : ISubject
 {
     private static Inventory _instance;
     private static readonly object _lock = new object();
+    private List<IObserver> _observers = new List<IObserver>();
     public List<Spaceship> Spaceships { get; private set; }
     public List<Part> Parts { get; private set; }
     public List<Assembly> Assemblies { get; private set; }
@@ -289,31 +292,42 @@ public sealed class Inventory
         if (!VerifyCommandForProduction(command))
         {
             Console.WriteLine("ERROR: Insufficient materials to produce the requested spaceships.");
-
             return;
         }
 
+        bool productionCompleted = false;
+        StringBuilder productionDetails = new StringBuilder();
         foreach (var item in command)
         {
             string spaceshipType = item.Key;
             int quantityNeeded = item.Value;
             var config = _configSpaceships.Find(s => s.Type.Equals(spaceshipType, StringComparison.OrdinalIgnoreCase));
-            
-            for (int i = 0; i < quantityNeeded; i++)
+        
+            if (config != null)
             {
-                var spaceship = spaceshipFactory.CreateSpaceshipFromConfig(config);
-                Spaceships.Add(spaceship);
-            }
+                for (int i = 0; i < quantityNeeded; i++)
+                {
+                    var spaceship = spaceshipFactory.CreateSpaceshipFromConfig(config);
+                    Spaceships.Add(spaceship);
+                }
 
-            foreach (var part in config.Parts)
-            {
-                int requiredQuantity = part.Value * quantityNeeded;
-                ReduceStock(part.Key, requiredQuantity);
+                foreach (var part in config.Parts)
+                {
+                    int requiredQuantity = part.Value * quantityNeeded;
+                    ReduceStock(part.Key, requiredQuantity);
+                }
+                productionCompleted = true;
+                productionDetails.AppendFormat("PRODUCED {0} {1} spaceship(s). ", quantityNeeded, spaceshipType);
             }
         }
 
-        Console.WriteLine("STOCK_UPDATED");
+        if (productionCompleted)
+        {
+            Console.WriteLine("PRODUCE command processed. Stock updated.");
+            Notify(productionDetails.ToString().TrimEnd());
+        }
     }
+
 
     private bool VerifyCommandForProduction(Dictionary<string, int> command)
     {
@@ -349,7 +363,7 @@ public sealed class Inventory
             }
         }
     }
-   public void ReceiveCommand(Dictionary<string, int> command)
+    public void ReceiveCommand(Dictionary<string, int> command)
     {
         HashSet<string> unknownItems = new HashSet<string>();
         bool updated = false;
@@ -358,32 +372,31 @@ public sealed class Inventory
         {
             string partName = item.Key;
             int quantity = item.Value;
+            bool partAdded = false;
 
             if (_configParts.Contains(partName))
             {
                 for (int i = 0; i < quantity; i++)
                 {
                     updated = true;
-                    if (partName.Contains(partName))
+                    if (partName.StartsWith("Hull"))
                     {
-                        if (partName.StartsWith("Hull"))
-                        {
-                            Parts.Add(hullFactory.CreatePart(partName));
-                        }
-                        else if (partName.StartsWith("Engine"))
-                        {
-                            Parts.Add(engineFactory.CreatePart(partName));
-                        }
-                        else if (partName.StartsWith("Wings"))
-                        {
-                            Parts.Add(wingsFactory.CreatePart(partName));
-                        }
-                        else if (partName.StartsWith("Thruster"))
-                        {
-                            Parts.Add(thrusterFactory.CreatePart(partName));
-                        }
+                        Parts.Add(hullFactory.CreatePart(partName));
+                    }
+                    else if (partName.StartsWith("Engine"))
+                    {
+                        Parts.Add(engineFactory.CreatePart(partName));
+                    }
+                    else if (partName.StartsWith("Wings"))
+                    {
+                        Parts.Add(wingsFactory.CreatePart(partName));
+                    }
+                    else if (partName.StartsWith("Thruster"))
+                    {
+                        Parts.Add(thrusterFactory.CreatePart(partName));
                     }
                 }
+                partAdded = true;
             }
             else if (_configSpaceships.Any(s => s.Type.Equals(partName, StringComparison.OrdinalIgnoreCase)))
             {
@@ -397,10 +410,15 @@ public sealed class Inventory
                         Spaceships.Add(spaceship);
                     }
                 }
+                partAdded = true;
             }
             else
             {
                 unknownItems.Add(partName);
+            }
+
+            if (partAdded) {
+                Notify($"RECEIVE {quantity} {partName}");
             }
         }
 
@@ -409,6 +427,7 @@ public sealed class Inventory
             foreach (var unknownItem in unknownItems)
             {
                 Console.WriteLine($"Unknown part or spaceship: {unknownItem}");
+                Notify($"ERROR Unknown part or spaceship: {unknownItem}");
             }
         }
 
@@ -421,4 +440,50 @@ public sealed class Inventory
             Console.WriteLine("RECEIVE command processed. No stock updated.");
         }
     }
+    public void Attach(IObserver observer)
+    {
+        _observers.Add(observer);
+    }
+
+    public void Detach(IObserver observer)
+    {
+        _observers.Remove(observer);
+    }
+
+    public void Notify(string message)
+    {
+        foreach (IObserver observer in _observers)
+        {
+            observer.Update(message);
+        }
+    }
+    public void DisplayAllMovements()
+    {
+        foreach (var observer in _observers)
+        {
+            if (observer is StockLogger logger)
+            {
+                logger.DisplayMovements();
+            }
+        }
+    }
+
+    public void DisplaySpecificMovements(string[] args)
+    {
+        foreach (var observer in _observers)
+        {
+            if (observer is StockLogger logger)
+            {
+                logger.DisplaySpecificMovements(args);
+            }
+        }
+    }
+    public void Clear()
+    {
+        Spaceships.Clear();
+        Parts.Clear();
+        Assemblies.Clear();
+        _observers.Clear(); 
+    }
+
 }
