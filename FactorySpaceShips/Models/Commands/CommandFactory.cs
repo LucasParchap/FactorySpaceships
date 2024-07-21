@@ -26,7 +26,6 @@ public static class CommandFactory
             case "SEND":
                 if (arguments.Length > 0)
                 {
-                    Console.WriteLine("oui");
                     var orderId = arguments[0];
                     var itemsToSend = ConvertValidArgumentsToDictionary(arguments.Skip(1).ToArray());
                     return new SendOrderCommand(orderContext, orderId, itemsToSend);
