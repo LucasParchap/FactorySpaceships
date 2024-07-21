@@ -2,6 +2,7 @@ using FactorySpaceships.Error;
 using FactorySpaceships.Models.Commands;
 using FactorySpaceships.Models.Factories;
 using FactorySpaceships.Models.Observer;
+using FactorySpaceships.Models.State;
 
 namespace FactorySpaceships.Models;
 
@@ -9,11 +10,13 @@ public class CommandPrompt
 {
     public static Inventory Inventory;
     public static CommandLineErrorHandler CommandLineErrorHandler = new CommandLineErrorHandler();
+    private static OrderContext orderContext;
     
     static CommandPrompt()
     {
         Inventory.ConfigureFactories(new HullFactory(), new EngineFactory(), new WingsFactory(), new ThrusterFactory());
         Inventory = Inventory.Instance;
+        orderContext = new OrderContext(Inventory);
         StockLogger logger = new StockLogger();
         Inventory.Attach(logger);
     }
@@ -27,8 +30,7 @@ public class CommandPrompt
         {
             Console.WriteLine("Please enter a command : ");
             string input = Console.ReadLine();
-            string command = ExtractValidCommandFromInput(input);
-            string[] arguments = ExtractValidArgumentsFromInput(input);
+            var (command, arguments, orderId) = ExtractCommandAndArguments(input);
 
             if (CommandLineErrorHandler.ValidateArgumentsStructure(input))
             {
@@ -38,10 +40,14 @@ public class CommandPrompt
                 {
                     cmd = new GetMovementsCommand(Inventory, arguments);
                 }
+                else if (command.ToUpper() == "SEND")
+                {
+                    cmd = new SendOrderCommand(orderContext,orderId, ConvertValidArgumentsToDictionary(arguments));
+                }
                 else if (command.ToUpper() != "EXIT")
                 {
                     Dictionary<string, int> argumentsDict = ConvertValidArgumentsToDictionary(arguments);
-                    cmd = CommandFactory.CreateCommand(command, Inventory, argumentsDict);
+                    cmd = CommandFactory.CreateCommand(command, Inventory, orderContext,arguments,argumentsDict);
                 }
                 else if (command.ToUpper() == "EXIT")
                 {
@@ -63,21 +69,38 @@ public class CommandPrompt
         string[] parts = input.Split(' ');
         return parts[0];  
     }
-    public static string[] ExtractValidArgumentsFromInput(string input)
+    public static (string, string[], string) ExtractCommandAndArguments(string input)
     {
- 
-        string[] inputParts = input.Split(new char[] { ' ' }, 2);
-        
+        string[] parts = input.Split(' ');
+        string command = parts[0];
+        string orderId = null;
         string[] arguments = null;
-        if (inputParts.Length > 1)
+
+        if (command.ToUpper() == "SEND" && parts.Length > 1)
         {
-            string argumentStr = inputParts[1];
-            arguments = argumentStr.Split(',')
-                .Select(arg => arg.Trim()) 
-                .Where(arg => !string.IsNullOrEmpty(arg))
-                .ToArray();
+            string[] orderAndArgs = input.Substring(5).Split(new char[] { ',' }, 2);
+            if (orderAndArgs.Length == 2)
+            {
+                orderId = orderAndArgs[0].Trim();
+                arguments = orderAndArgs[1].Split(',')
+                    .Select(arg => arg.Trim())
+                    .Where(arg => !string.IsNullOrEmpty(arg))
+                    .ToArray();
+            }
         }
-        return arguments; 
+        else
+        {
+            string[] inputParts = input.Split(new char[] { ' ' }, 2);
+            if (inputParts.Length > 1)
+            {
+                arguments = inputParts[1].Split(',')
+                    .Select(arg => arg.Trim())
+                    .Where(arg => !string.IsNullOrEmpty(arg))
+                    .ToArray();
+            }
+        }
+
+        return (command, arguments, orderId);
     }
     public static Dictionary<string, int> ConvertValidArgumentsToDictionary(string[] arguments)
     {

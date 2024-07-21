@@ -16,33 +16,63 @@ public class CommandLineErrorHandler : ErrorHandler
     public bool ValidateArgumentsStructure(string input)
     {
         string[] argumentsParts = input.Split(new char[] { ' ' }, 2);
-        if (argumentsParts[0] == "GET_MOVEMENTS")
+        
+        if (argumentsParts[0].ToUpper() == "GET_MOVEMENTS" || argumentsParts[0].ToUpper() == "LIST_ORDER" || argumentsParts[0].ToUpper() == "STOCKS" )
         {
-            return true;
-        }
-        if (argumentsParts.Length < 2 || string.IsNullOrWhiteSpace(argumentsParts[1]))
-        {
-            message = "";
             return true;
         }
 
-        string[] arguments = argumentsParts[1].Split(',');
-        foreach (string argument in arguments)
+        if (argumentsParts[0].ToUpper() == "SEND" && argumentsParts.Length > 1)
         {
-            string trimmedArgument = argument.Trim();
-            if (string.IsNullOrEmpty(trimmedArgument))
+            string[] orderAndArgs = argumentsParts[1].Split(new char[] { ',' }, 2);
+            if (orderAndArgs.Length != 2 || string.IsNullOrWhiteSpace(orderAndArgs[0]) || string.IsNullOrWhiteSpace(orderAndArgs[1]))
             {
-                message = "Empty argument detected. Ensure arguments are separated by a single comma without extra spaces.";
+                message = "SEND command must include an order ID followed by a comma and the arguments.";
                 return false;
             }
-            
-            string[] parts = trimmedArgument.Split(' ');
-            if (parts.Length != 2 || string.IsNullOrWhiteSpace(parts[0]) || string.IsNullOrWhiteSpace(parts[1]))
+
+            string[] arguments = orderAndArgs[1].Split(',');
+            foreach (string argument in arguments)
             {
-                message = $"Each argument must consist of exactly two parts: a quantity and a name, separated by one space. Problem found with '{trimmedArgument}'.";
-                return false;
+                string trimmedArgument = argument.Trim();
+                if (string.IsNullOrEmpty(trimmedArgument))
+                {
+                    message = "Empty argument detected. Ensure arguments are separated by a single comma without extra spaces.";
+                    return false;
+                }
+
+                string[] parts = trimmedArgument.Split(' ');
+                if (parts.Length != 2 || string.IsNullOrWhiteSpace(parts[0]) || string.IsNullOrWhiteSpace(parts[1]))
+                {
+                    message = $"Each argument must consist of exactly two parts: a quantity and a name, separated by one space. Problem found with '{trimmedArgument}'.";
+                    return false;
+                }
             }
-            
+        }
+        else if (argumentsParts.Length < 2 || string.IsNullOrWhiteSpace(argumentsParts[1]))
+        {
+            message = "Invalid command structure.";
+            return false;
+        }
+        else
+        {
+            string[] arguments = argumentsParts[1].Split(',');
+            foreach (string argument in arguments)
+            {
+                string trimmedArgument = argument.Trim();
+                if (string.IsNullOrEmpty(trimmedArgument))
+                {
+                    message = "Empty argument detected. Ensure arguments are separated by a single comma without extra spaces.";
+                    return false;
+                }
+
+                string[] parts = trimmedArgument.Split(' ');
+                if (parts.Length != 2 || string.IsNullOrWhiteSpace(parts[0]) || string.IsNullOrWhiteSpace(parts[1]))
+                {
+                    message = $"Each argument must consist of exactly two parts: a quantity and a name, separated by one space. Problem found with '{trimmedArgument}'.";
+                    return false;
+                }
+            }
         }
 
         message = "";

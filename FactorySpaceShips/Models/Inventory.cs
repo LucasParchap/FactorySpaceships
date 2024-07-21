@@ -485,5 +485,15 @@ public sealed class Inventory : ISubject
         Assemblies.Clear();
         _observers.Clear(); 
     }
-
+    public void RemoveSpaceships(string type, int quantity)
+    {
+        for (int i = Spaceships.Count - 1; i >= 0 && quantity > 0; i--)
+        {
+            if (Spaceships[i].Type.Equals(type, StringComparison.OrdinalIgnoreCase))
+            {
+                Spaceships.RemoveAt(i);
+                quantity--;
+            }
+        }
+    }
 }
