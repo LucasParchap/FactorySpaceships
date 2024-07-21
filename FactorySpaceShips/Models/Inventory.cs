@@ -262,7 +262,7 @@ public sealed class Inventory : ISubject
 
             if (spaceship == null)
             {
-                Console.WriteLine($"ERROR `{spaceshipType}` is not a recognized spaceship");
+                Console.WriteLine($"\u001b[31mERROR\u001b[0m `{spaceshipType}` is not a recognized spaceship");
                 return;
             }
     
@@ -279,11 +279,11 @@ public sealed class Inventory : ISubject
         }
         if (isUnavailable)
         {
-            Console.WriteLine("UNAVAILABLE");
+            Console.WriteLine("\u001b[38;5;214mUNAVAILABLE\u001b[0m"); 
         }
         else
         {
-            Console.WriteLine("AVAILABLE");
+            Console.WriteLine("\u001b[38;5;214mAVAILABLE\u001b[0m");
         }
     }
 
@@ -291,7 +291,7 @@ public sealed class Inventory : ISubject
     {
         if (!VerifyCommandForProduction(command))
         {
-            Console.WriteLine("ERROR: Insufficient materials to produce the requested spaceships.");
+            Console.WriteLine("\u001b[31mERROR\u001b[0m: Insufficient materials to produce the requested spaceships.");
             return;
         }
 
@@ -323,7 +323,7 @@ public sealed class Inventory : ISubject
 
         if (productionCompleted)
         {
-            Console.WriteLine("PRODUCE command processed. Stock updated.");
+            Console.WriteLine("\u001b[38;5;214mSTOCK_UPDATED\u001b[0m");
             Notify(productionDetails.ToString().TrimEnd());
         }
     }
@@ -426,18 +426,17 @@ public sealed class Inventory : ISubject
         {
             foreach (var unknownItem in unknownItems)
             {
-                Console.WriteLine($"Unknown part or spaceship: {unknownItem}");
-                Notify($"ERROR Unknown part or spaceship: {unknownItem}");
+                Console.WriteLine($"\u001b[31mERROR\u001b[0m : Unknown part or spaceship: {unknownItem}");
             }
         }
 
         if (updated)
         {
-            Console.WriteLine("RECEIVE command processed. Stock updated.");
+            Console.WriteLine("\u001b[38;5;214mSTOCK_UPDATED\u001b[0m");
         }
         else
         {
-            Console.WriteLine("RECEIVE command processed. No stock updated.");
+            Console.WriteLine("\u001b[38;5;214mSTOCK_NOT_UPDATED\u001b[0m");
         }
     }
     public void Attach(IObserver observer)
@@ -495,5 +494,9 @@ public sealed class Inventory : ISubject
                 quantity--;
             }
         }
+    }
+    public List<string> GetValidSpaceships()
+    {
+        return _configSpaceships.Select(s => s.Type).ToList();
     }
 }

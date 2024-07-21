@@ -1,18 +1,26 @@
-namespace FactorySpaceships.Models.State;
+﻿namespace FactorySpaceships.Models.State;
 
 public class OrderContext
 {
     public Dictionary<string, OrderDetails> Orders { get; set; } = new Dictionary<string, OrderDetails>();
     public Inventory Inventory { get; set; }
+    private List<string> validSpaceships;
 
     public OrderContext(Inventory inventory)
     {
         Inventory = inventory;
+        validSpaceships = inventory.GetValidSpaceships();
     }
 
     public void ProcessOrder(string args)
     {
         var newState = new NewOrderState();
+        var invalidSpaceships = GetInvalidSpaceships(args);
+        if (invalidSpaceships.Any())
+        {
+            Console.WriteLine("\u001b[31mERROR\u001b[0m : Invalid spaceship types in the order: " + string.Join(", ", invalidSpaceships));
+            return;
+        }
         newState.HandleOrder(this, args);
     }
 
@@ -20,39 +28,41 @@ public class OrderContext
     {
         if (!Orders.ContainsKey(orderId))
         {
-            Console.WriteLine($"Order ID {orderId} does not exist.");
+            Console.WriteLine($"\u001b[31mERROR\u001b[0m : Order ID {orderId} does not exist.");
             return;
         }
 
         var order = Orders[orderId];
         var remainingItems = order.RemainingItems;
-
         foreach (var item in items)
         {
-            if (remainingItems.ContainsKey(item.Key))
+            var itemKeyUpper = item.Key.ToUpper();
+            var remainingItemKeyUpper = remainingItems.Keys.FirstOrDefault(k => k.ToUpper() == itemKeyUpper);
+
+            if (remainingItemKeyUpper != null)
             {
-                int availableQuantity = Inventory.Spaceships.Count(s => s.Type == item.Key);
+                int availableQuantity = Inventory.Spaceships.Count(s => s.Type.ToUpper() == itemKeyUpper);
 
                 if (availableQuantity >= item.Value)
                 {
-                    remainingItems[item.Key] -= item.Value;
-                    Inventory.RemoveSpaceships(item.Key, item.Value);
+                    remainingItems[remainingItemKeyUpper] -= item.Value;
+                    Inventory.RemoveSpaceships(remainingItemKeyUpper, item.Value);
 
                     Inventory.Notify($"SEND {item.Value} {item.Key}");
 
-                    if (remainingItems[item.Key] <= 0)
+                    if (remainingItems[remainingItemKeyUpper] <= 0)
                     {
-                        remainingItems.Remove(item.Key);
+                        remainingItems.Remove(remainingItemKeyUpper);
                     }
                 }
                 else
                 {
-                    Console.WriteLine($"Not enough {item.Key} in stock to fulfill the order.");
+                    Console.WriteLine($"\u001b[31mERROR\u001b[0m : Not enough {item.Key} in stock to fulfill the order.");
                 }
             }
             else
             {
-                Console.WriteLine($"Item {item.Key} not found in the order or already fulfilled.");
+                Console.WriteLine($"\u001b[31mERROR\u001b[0m : Item {item.Key} not found in the order or already fulfilled.");
             }
         }
 
@@ -64,7 +74,7 @@ public class OrderContext
         else
         {
             Orders.Remove(orderId);
-            Console.WriteLine($"COMPLETED {orderId}");
+            Console.WriteLine($"\u001b[38;5;214mCOMPLETED\u001b[0m {orderId}");
         }
     }
     /*
@@ -82,5 +92,15 @@ public class OrderContext
             var remainingItems = string.Join(", ", order.Value.RemainingItems.Select(kv => $"{kv.Value} {kv.Key}"));
             Console.WriteLine($"Order {order.Key}: {remainingItems}");
         }
+    }
+    private List<string> GetInvalidSpaceships(string args)
+    {
+        var items = args.Split(',')
+            .Select(x => x.Trim())
+            .Select(x => x.Split(' ')[1])
+            .ToList();
+
+        var invalidSpaceships = items.Where(item => !validSpaceships.Contains(item, StringComparer.OrdinalIgnoreCase)).ToList();
+        return invalidSpaceships;
     }
 }
