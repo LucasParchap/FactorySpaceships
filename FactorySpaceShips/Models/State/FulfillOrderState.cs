@@ -1,4 +1,4 @@
-namespace FactorySpaceships.Models.State;
+﻿namespace FactorySpaceships.Models.State;
 
 public class FulfillOrderState : IOrderState
 {
@@ -10,8 +10,10 @@ public class FulfillOrderState : IOrderState
     public void SendOrder(OrderContext context, string orderId, Dictionary<string, int> items)
     {
         var order = context.Orders[orderId];
+        
         foreach (var item in items)
         {
+            
             if (order.RemainingItems.ContainsKey(item.Key))
             {
                 int availableQuantity = context.Inventory.Spaceships.Count(s => s.Type == item.Key);
