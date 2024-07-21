@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using FactorySpaceships.Config;
+using FactorySpaceships.Models.Factories;
 
 namespace FactorySpaceships.Models;
 
@@ -12,7 +13,14 @@ public sealed class Inventory
     public List<Part> Parts { get; private set; }
     public List<Assembly> Assemblies { get; private set; }
     
+    private static SpaceshipFactory spaceshipFactory;
+    private static HullFactory hullFactory;
+    private static EngineFactory engineFactory;
+    private static WingsFactory wingsFactory;
+    private static ThrusterFactory thrusterFactory;
+    
     private List<SpaceshipConfig.SpaceshipData> _configSpaceships;
+    private HashSet<string> _configParts;
     private Inventory()
     {
         Spaceships = new List<Spaceship>();
@@ -20,6 +28,12 @@ public sealed class Inventory
         Assemblies = new List<Assembly>();
         SpaceshipConfig spaceshipConfig = SpaceshipConfig.Instance;
         _configSpaceships = spaceshipConfig.LoadSpaceships();
+        _configParts = new HashSet<string>(spaceshipConfig.LoadParts());
+        
+        hullFactory = new HullFactory();
+        engineFactory = new EngineFactory();
+        wingsFactory = new WingsFactory();
+        thrusterFactory = new ThrusterFactory();
     }
     public static Inventory Instance
     {
@@ -37,6 +51,10 @@ public sealed class Inventory
             }
             return _instance;
         }
+    }
+    public static void ConfigureFactories(IPartFactory<Hull> hullF, IPartFactory<Engine> engineF, IPartFactory<Wings> wingsF, IPartFactory<Thruster> thrusterF)
+    {
+        spaceshipFactory = new SpaceshipFactory(hullF, engineF, wingsF, thrusterF);
     }
     /**
      * Group all the spaceships into a dictionary  (key = type  | value = counter)
@@ -283,7 +301,7 @@ public sealed class Inventory
             
             for (int i = 0; i < quantityNeeded; i++)
             {
-                var spaceship = CreateSpaceshipFromConfig(config);
+                var spaceship = spaceshipFactory.CreateSpaceshipFromConfig(config);
                 Spaceships.Add(spaceship);
             }
 
@@ -331,34 +349,76 @@ public sealed class Inventory
             }
         }
     }
-    public Spaceship CreateSpaceshipFromConfig(SpaceshipConfig.SpaceshipData config)
+   public void ReceiveCommand(Dictionary<string, int> command)
     {
-        Hull hull = null;
-        Engine engine = null;
-        Wings wings = null;
-        List<Thruster> thrusters = new List<Thruster>();
+        HashSet<string> unknownItems = new HashSet<string>();
+        bool updated = false;
 
-        foreach (var part in config.Parts)
+        foreach (var item in command)
         {
-            switch (part.Key)
+            string partName = item.Key;
+            int quantity = item.Value;
+
+            if (_configParts.Contains(partName))
             {
-                case "Hull":
-                    hull = new Hull(part.Key);
-                    break;
-                case "Engine":
-                    engine = new Engine(part.Key);
-                    break;
-                case "Wings":
-                    wings = new Wings(part.Key);
-                    break;
-                case "Thruster":
-                    for (int i = 0; i < part.Value; i++)
+                for (int i = 0; i < quantity; i++)
+                {
+                    updated = true;
+                    if (partName.Contains(partName))
                     {
-                        thrusters.Add(new Thruster(part.Key));
+                        if (partName.StartsWith("Hull"))
+                        {
+                            Parts.Add(hullFactory.CreatePart(partName));
+                        }
+                        else if (partName.StartsWith("Engine"))
+                        {
+                            Parts.Add(engineFactory.CreatePart(partName));
+                        }
+                        else if (partName.StartsWith("Wings"))
+                        {
+                            Parts.Add(wingsFactory.CreatePart(partName));
+                        }
+                        else if (partName.StartsWith("Thruster"))
+                        {
+                            Parts.Add(thrusterFactory.CreatePart(partName));
+                        }
                     }
-                    break;
+                }
+            }
+            else if (_configSpaceships.Any(s => s.Type.Equals(partName, StringComparison.OrdinalIgnoreCase)))
+            {
+                var config = _configSpaceships.Find(s => s.Type.Equals(partName, StringComparison.OrdinalIgnoreCase));
+                for (int i = 0; i < quantity; i++)
+                {
+                    var spaceship = spaceshipFactory.CreateSpaceshipFromConfig(config);
+                    if (spaceship != null)
+                    {
+                        updated = true;
+                        Spaceships.Add(spaceship);
+                    }
+                }
+            }
+            else
+            {
+                unknownItems.Add(partName);
             }
         }
-        return new Spaceship(config.Type, hull, engine, wings, thrusters);
+
+        if (unknownItems.Count > 0)
+        {
+            foreach (var unknownItem in unknownItems)
+            {
+                Console.WriteLine($"Unknown part or spaceship: {unknownItem}");
+            }
+        }
+
+        if (updated)
+        {
+            Console.WriteLine("RECEIVE command processed. Stock updated.");
+        }
+        else
+        {
+            Console.WriteLine("RECEIVE command processed. No stock updated.");
+        }
     }
 }

@@ -42,6 +42,10 @@ namespace FactorySpaceships.Config
     		public string Type { get; set; } = string.Empty; 
     		public Dictionary<string, int> Parts { get; set; } = new Dictionary<string, int>(); 
 		}
+        public class PartsWrapper
+        {
+            public List<string> Parts { get; set; } = new List<string>();
+        }
 
         public List<SpaceshipData> LoadSpaceships()
         {
@@ -62,6 +66,27 @@ namespace FactorySpaceships.Config
             {
                 Console.WriteLine("Error reading or parsing the config file: " + ex.Message);
                 throw; 
+            }
+        }
+        public List<string> LoadParts()
+        {
+            try
+            {
+                var jsonText = File.ReadAllText(_filePath);
+                var wrapper = JsonConvert.DeserializeObject<PartsWrapper>(jsonText);
+                if (wrapper != null)
+                {
+                    return wrapper.Parts;
+                }
+                else
+                {
+                    throw new InvalidOperationException("Failed to load part data from configuration.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error reading or parsing the config file: " + ex.Message);
+                throw;
             }
         }
     }
