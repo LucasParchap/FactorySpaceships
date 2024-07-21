@@ -1,11 +1,18 @@
 using FactorySpaceships.Error;
+using FactorySpaceships.Models.Factories;
 
 namespace FactorySpaceships.Models;
 
 public class CommandPrompt
 {
-    public static Inventory Inventory = Inventory.Instance;
+    public static Inventory Inventory;
     public static CommandLineErrorHandler CommandLineErrorHandler = new CommandLineErrorHandler();
+    
+    static CommandPrompt()
+    {
+        Inventory.ConfigureFactories(new HullFactory(), new EngineFactory(), new WingsFactory(), new ThrusterFactory());
+        Inventory = Inventory.Instance;
+    }
     /*
      * Method to process commands
      */
@@ -47,13 +54,15 @@ public class CommandPrompt
                         case "PRODUCE":
                             Inventory.ProduceCommand(argumentsDict);
                             break;
+                        case "RECEIVE":
+                            Inventory.ReceiveCommand(argumentsDict);
+                            break;
                         case "EXIT":
                             running = false;
                             break;
                         default:
                             Console.WriteLine("Unknown command. Please try again.");
                             break;
-                        
                     }
                 }
             }
@@ -62,7 +71,6 @@ public class CommandPrompt
                 CommandLineErrorHandler.PrintError();
             }
         }
-        
     }
     public static string ExtractValidCommandFromInput(string input)
     {
@@ -89,28 +97,24 @@ public class CommandPrompt
     {
         Dictionary<string, int> argumentsDictionary = new Dictionary<string, int>();
         if (arguments != null)
-        {
+        { 
             foreach (string argument in arguments)
+            {
+                string[] parts = argument.Split(new char[] { ' ' }, 2);
+                if (parts.Length == 2 && int.TryParse(parts[0], out int quantity))
+                {
+                    string name = parts[1];
+                    if (argumentsDictionary.ContainsKey(name))
                     {
-                        string[] parts = argument.Split(new char[] { ' ' }, 2);
-                        if (parts.Length == 2 && int.TryParse(parts[0], out int quantity))
-                        {
-                            string name = parts[1];
-                            if (argumentsDictionary.ContainsKey(name))
-                            {
-                                argumentsDictionary[name] += quantity;
-                            }
-                            else
-                            {
-                                argumentsDictionary[name] = quantity;
-                            }
-                        }
-                
+                        argumentsDictionary[name] += quantity;
                     }
+                    else
+                    {
+                        argumentsDictionary[name] = quantity;
+                    }
+                }
+            }
         }
         return argumentsDictionary;
     }
-    
-    
- 
 }

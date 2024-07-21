@@ -27,5 +27,19 @@
         "Thruster_TC1": 1
       }
     }
+  ],
+  "Parts": [
+    "Hull_HE1",
+    "Engine_EE1",
+    "Wings_WE1",
+    "Thruster_TE1",
+    "Hull_HS1",
+    "Engine_ES1",
+    "Wings_WS1",
+    "Thruster_TS1",
+    "Hull_HC1",
+    "Engine_EC1",
+    "Wings_WC1",
+    "Thruster_TC1"
   ]
 }
