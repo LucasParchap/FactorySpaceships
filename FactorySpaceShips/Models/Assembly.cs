@@ -68,6 +68,4 @@ public class Assembly
         description.Append(']');
         return description.ToString();
     }
-
-
 }
