@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+using FactorySpaceships.Config;
 using FactorySpaceships.Error;
 using FactorySpaceships.Models.Commands;
 using FactorySpaceships.Models.Factories;
@@ -28,14 +30,14 @@ public class CommandPrompt
         bool running = true;
         while (running)
         {
-            Console.WriteLine("Please enter a command : ");
-            string input = Console.ReadLine();
+            DisplayPrompt();
+            string input = ReadLineWithColor(); 
             var (command, arguments, orderId) = ExtractCommandAndArguments(input);
 
-            if (CommandLineErrorHandler.ValidateArgumentsStructure(input))
+            if (CommandLineErrorHandler.ValidateArgumentsStructure(input) && CommandLineErrorHandler.ValidateArguments(arguments))
             {
+                
                 ICommand cmd = null;
-
                 if (command.ToUpper() == "GET_MOVEMENTS")
                 {
                     cmd = new GetMovementsCommand(Inventory, arguments);
@@ -126,4 +128,84 @@ public class CommandPrompt
         }
         return argumentsDictionary;
     }
+   public static string ColorizeCommand(string input)
+    {
+        string[] commands = { "STOCKS", "NEEDED_STOCKS", "INSTRUCTIONS", "VERIFY", "PRODUCE", "ORDER", "SEND", "LIST_ORDER", "GET_MOVEMENTS", "RECEIVE" };
+        foreach (var command in commands)
+        {
+            string pattern = $"\\b{command}\\b";
+            string replacement = $"\u001b[32m{command}\u001b[0m";
+            input = Regex.Replace(input, pattern, replacement, RegexOptions.IgnoreCase);
+        }
+        return input;
+    }
+
+    private static string ReadLineWithColor()
+    {
+        var input = new System.Text.StringBuilder();
+        ConsoleKeyInfo keyInfo;
+        int cursorPosition = 0;
+
+        while ((keyInfo = Console.ReadKey(true)).Key != ConsoleKey.Enter)
+        {
+            if (keyInfo.Key == ConsoleKey.Backspace && input.Length > 0)
+            {
+                input.Remove(input.Length - 1, 1);
+                cursorPosition--;
+                ReprintInput(input.ToString(), cursorPosition);
+            }
+            else if (keyInfo.Key != ConsoleKey.Backspace)
+            {
+                input.Insert(cursorPosition, keyInfo.KeyChar);
+                cursorPosition++;
+                ReprintInput(input.ToString(), cursorPosition);
+            }
+        }
+
+        Console.WriteLine();
+        return input.ToString();
+    }
+
+    private static void ReprintInput(string input, int cursorPosition)
+    {
+        int currentLineCursor = Console.CursorTop;
+
+        Console.SetCursorPosition(0, Console.CursorTop);
+        ClearCurrentConsoleLine();
+        Console.SetCursorPosition(0, currentLineCursor);
+        Console.Write(ColorizeCommand(input));
+        Console.SetCursorPosition(cursorPosition, currentLineCursor);
+    }
+
+    private static void ClearCurrentConsoleLine()
+    {
+        int currentLineCursor = Console.CursorTop;
+        Console.SetCursorPosition(0, Console.CursorTop);
+        Console.Write(new string(' ', Console.WindowWidth));
+        Console.SetCursorPosition(0, currentLineCursor);
+    }
+
+    private static void DisplayPrompt()
+    {
+        string promptText = "Please enter a command:";
+        int promptWidth = promptText.Length + 8; // 4 spaces padding on each side
+
+        string topBottomBorder = new string('═', promptWidth);
+
+        Console.WriteLine($"\u001b[36m╔{topBottomBorder}╗");
+        Console.WriteLine($"║\u001b[33m    {promptText}    \u001b[36m║");
+        Console.WriteLine($"╚{topBottomBorder}╝\u001b[0m");
+    }
+
+
+
+
+
+
+
+
+
+
+
+
 }

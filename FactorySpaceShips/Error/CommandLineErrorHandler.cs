@@ -27,7 +27,7 @@ public class CommandLineErrorHandler : ErrorHandler
             string[] orderAndArgs = argumentsParts[1].Split(new char[] { ',' }, 2);
             if (orderAndArgs.Length != 2 || string.IsNullOrWhiteSpace(orderAndArgs[0]) || string.IsNullOrWhiteSpace(orderAndArgs[1]))
             {
-                message = "SEND command must include an order ID followed by a comma and the arguments.";
+                message = "\u001b[31mERROR\u001b[0m : SEND command must include an order ID followed by a comma and the arguments.";
                 return false;
             }
 
@@ -37,21 +37,21 @@ public class CommandLineErrorHandler : ErrorHandler
                 string trimmedArgument = argument.Trim();
                 if (string.IsNullOrEmpty(trimmedArgument))
                 {
-                    message = "Empty argument detected. Ensure arguments are separated by a single comma without extra spaces.";
+                    message = "\u001b[31mERROR\u001b[0m : Empty argument detected. Ensure arguments are separated by a single comma without extra spaces.";
                     return false;
                 }
 
                 string[] parts = trimmedArgument.Split(' ');
                 if (parts.Length != 2 || string.IsNullOrWhiteSpace(parts[0]) || string.IsNullOrWhiteSpace(parts[1]))
                 {
-                    message = $"Each argument must consist of exactly two parts: a quantity and a name, separated by one space. Problem found with '{trimmedArgument}'.";
+                    message = $"\u001b[31mERROR\u001b[0m : Each argument must consist of exactly two parts: a quantity and a name, separated by one space. Problem found with '{trimmedArgument}'.";
                     return false;
                 }
             }
         }
         else if (argumentsParts.Length < 2 || string.IsNullOrWhiteSpace(argumentsParts[1]))
         {
-            message = "Invalid command structure.";
+            message = "\u001b[31mERROR\u001b[0m : Invalid command structure.";
             return false;
         }
         else
@@ -62,14 +62,14 @@ public class CommandLineErrorHandler : ErrorHandler
                 string trimmedArgument = argument.Trim();
                 if (string.IsNullOrEmpty(trimmedArgument))
                 {
-                    message = "Empty argument detected. Ensure arguments are separated by a single comma without extra spaces.";
+                    message = "\u001b[31mERROR\u001b[0m : Empty argument detected. Ensure arguments are separated by a single comma without extra spaces.";
                     return false;
                 }
 
                 string[] parts = trimmedArgument.Split(' ');
                 if (parts.Length != 2 || string.IsNullOrWhiteSpace(parts[0]) || string.IsNullOrWhiteSpace(parts[1]))
                 {
-                    message = $"Each argument must consist of exactly two parts: a quantity and a name, separated by one space. Problem found with '{trimmedArgument}'.";
+                    message = $"\u001b[31mERROR\u001b[0m : Each argument must consist of exactly two parts: a quantity and a name, separated by one space. Problem found with '{trimmedArgument}'.";
                     return false;
                 }
             }
@@ -90,13 +90,13 @@ public class CommandLineErrorHandler : ErrorHandler
                 string[] parts = arg.Split(' ');
                 if (!int.TryParse(arg.Split(' ')[0], out _))
                 {
-                    message = "A numeric value is expected as the first argument.";
+                    message = "\u001b[31mERROR\u001b[0m : A numeric value is expected as the first argument.";
                     return false;
                 }
                 string namePart = parts[1];
                 if (namePart.All(char.IsDigit))
                 {
-                    message = "A string value is expected as the second argument, not just numbers.";
+                    message = "\u001b[31mERROR\u001b[0m : A string value is expected as the second argument, not just numbers.";
                     return false;
                 }
             } 
